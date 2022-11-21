@@ -1,41 +1,78 @@
 import numpy as np
 import random
-
+import re
 
 print("Simulated Annealing Project")
 def print_b(board):
     print(np.matrix(board))
+# def makenp(board):
+#     return np.matrix(board)
 
 def initialise_array(numrows,numcols):
-    board = [['--']*numcols]*numrows
+    board = [['---']*numcols for i in range(numrows)]
     return board
 def checkboardfull(board):
-    if any('--' in nested_list for nested_list in board):
+    if any('---' in nested_list for nested_list in board):
         return False
     else:
         return True
+def calcdistance(board,connectionlist):
+    max_row=0
+    max_col=0
+    lengthlist=[]
 
-
-f = open("d0.txt", "r")
+    for elements in connectionlist:
+        for element in elements:
+            result = np.argwhere(board == (element))
+            # print("Element to find: ")
+            # print(element)
+            # print("this is result")
+            # print(result)
+            currentrow=result[0][0]
+            currentcol=result[0][1]
+            for index, number in enumerate(elements):
+                result = list(zip(*np.where(board == str(number))))
+                otherrow=result[0][0]
+                othercol=result[0][1]
+                x=abs(currentrow-otherrow)    
+                if(x>max_row):
+                    max_row=x
+                y=abs(currentcol-othercol)    
+                if(y>max_col):
+                    max_col=y
+                z=max_col+max_row
+        lengthlist.append(z)
+    # print("Length List=")            
+    # print(lengthlist)
+    # print(len(lengthlist))
+    # print("Sum of length list")
+    # print(sum(lengthlist))
+    return sum(lengthlist)
+    
+f = open("d2.txt", "r")
 # print(f.read()) 
+fstline=f.readline()
+numsinfstline=re.findall(r'\d+', fstline)
 print("Getting number of cells")
-numcells=f.read(2)
+numcells=numsinfstline[0]
 print(numcells)
 print("Getting number of connections")
-numconnections=f.read(3).strip()
+numconnections=numsinfstline[1]
 print(numconnections)
 print("getting number of rows and cols")
-fstline=f.read(4)
-rows=fstline[1].strip()
-cols=fstline[3].strip()
-numrows=int(rows)
-numcols=int(cols)
-
+numrows=int(numsinfstline[2])
+numcols=int(numsinfstline[3])
 print(numrows)
 print(numcols)
 
+
+
+
+
+
 mat_board=initialise_array(numrows,numcols)
-print_b(mat_board)
+
+board = np.array(mat_board)
 
 #we need to get the components that we will be placing randomly
 list_of_comp=[]
@@ -59,24 +96,30 @@ for item in list_of_comp:
 mylist = list(dict.fromkeys(clean))
 print("list of components")
 print(mylist)
-print_b(mat_board)
-#now we need to populate our board with the elements in mylist
 for index, element in enumerate(mylist):
     randomrow=random.randint(0, numrows)
     randomcol=random.randint(0, numcols)
     while True:
         if checkboardfull(mat_board)==True:
             break
-        if mat_board[randomrow-1][randomcol-1]=="--":
-            mat_board[randomrow-1][randomcol-1]=mylist[index]
-            index=index+1 
+        if board[randomrow-1][randomcol-1]=="---":
+            board[randomrow-1][randomcol-1]=mylist[index]
+            # print("Element placed: ")
+            # print(mylist[index])
+            break 
         else:
             randomrow=random.randint(0, numrows)
             randomcol=random.randint(0, numcols)
 print("board after being filled")
-print_b(mat_board)
-# print(list_of_comp)
+print(board)
 
+connectionlist=[]
+#we put our connections into a list
+for index, x in enumerate(list_of_comp):
+    connectionlist.append(re.findall(r'\d+', list_of_comp[index]))
+# print(connectionlist[7])
 
-
-
+intial=calcdistance(board,connectionlist)
+print("wire length is:")
+print(intial)
+#Testing
