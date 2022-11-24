@@ -73,6 +73,15 @@ def thermal_an(board,connectionlist,intial,numnets,numcells):
     print(board)
     print("FINAL LENGTH")
     print(intial)   
+   
+def plotting(board):
+    for i in range (0, numrows):
+        for j in range (0, numcols):
+            if board[i][j]!="---":
+                print(i,j)
+                plt.scatter(j,i)
+    plt.show()
+    
 filename=input("Please enter the name of the file with the .txt extension: ")
 f = open(filename, "r")
 fstline=f.readline()
@@ -129,3 +138,4 @@ print("initial wire length is:")
 print(intial)
 #Annealing
 thermal_an(board,connectionlist,intial,numnets,numcells)
+plotting(board)
