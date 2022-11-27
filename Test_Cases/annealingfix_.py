@@ -81,7 +81,7 @@ def thermal_an(board,connectionlist,intial,numnets,numcells):
     print(board)
     print("FINAL LENGTH")
     print(intial)
-    plotting(board)
+    
     print("Time taken")
     print(end - start)
    
@@ -144,3 +144,4 @@ print("initial wire length is:")
 print(intial)
 #Annealing
 thermal_an(board,connectionlist,intial,numnets,numcells)
+plotting(board)
