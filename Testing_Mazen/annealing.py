@@ -10,13 +10,16 @@ print("Simulated Annealing Project")
 
 
 class component_class:
-    def __init__(self, row, col, value):
+
+    def __init__(self, row, col, value,):
         self.row = row
         self.col = col
         self.value = value
+        self.netindex= []
+        
     # method to print the object
     def prnt(self):
-        return  'value: '+str(self.value)+" " + 'row: ' + str(self.row) + " "+ "col: " + str(self.col)
+        return  'value: '+str(self.value)+" " + 'row: ' + str(self.row) + " "+ "col: " + str(self.col) + " " + "netindex: " + str(self.netindex)
         
 
 
@@ -49,7 +52,28 @@ def calcdistance(connectionlist, listofobe):
             z=max_col+max_row
         lengthlist.append(z)
     # print(lengthlist)
-    return sum(lengthlist)
+    return (lengthlist)
+def hpwl(lengthlist, listofobe1, listofobe2):
+    #for listofobe1, calulate the hpwl for the indexis in the netindex and substiute them in the index of the lengthlist
+    max_row=0
+    max_col=0
+    for index, element in enumerate(listofobe1.netindex):
+        currentrow=int(listofobe1.row)
+        currentcol=int(listofobe1.col)
+        otherrow=int(listofobe2.row)
+        othercol=int(listofobe2.col)
+        x=abs(currentrow-otherrow)    
+        if(x>max_row):
+            max_row=x
+        y=abs(currentcol-othercol)    
+        if(y>max_col):
+            max_col=y
+        z=max_col+max_row
+        lengthlist[element]=z
+    return (lengthlist)
+    
+
+
 
      
 
@@ -61,7 +85,7 @@ def plotting(board):
                 # print(i,j)
                 plt.scatter(j,i)
     plt.show()
-def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe):
+def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlist):
     inital_temp=intial*500
     final_temp=(5*10**-6)*(intial/int(numnets))
     # print(final_temp)
@@ -88,7 +112,9 @@ def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe):
 
         board[listofobe[randnum1].row][listofobe[randnum1].col], board[listofobe[randnum2].row][listofobe[randnum2].col]= board[listofobe[randnum2].row][listofobe[randnum2].col], board[listofobe[randnum1].row][listofobe[randnum1].col]
         iterations=iterations+1
-        prop=calcdistance(connectionlist,listofobe)
+        lengthlist=hpwl(lengthlist,listofobe[randnum1],listofobe[randnum2])
+        prop=sum(lengthlist)
+        # prop=calcdistance(connectionlist,listofobe)
         delta_l=prop-intial
         try:
             prob=math.exp(-delta_l/temper)
@@ -145,6 +171,7 @@ for item in list_of_comp:
         clean.append(s)
 #now we need to remove duplicates
 mylist = list(dict.fromkeys(clean))
+#we need to place the components randomly
 for index, element in enumerate(mylist):
     randomrow=random.randint(0, numrows)
     randomcol=random.randint(0, numcols)
@@ -170,15 +197,21 @@ for i in listofobjects:
         i.row=numrows-1
     if i.col==-1:
         i.col=numcols-1
+# check the value in the list of objects. If its in the connection list, add its index to the netindex value of the object
+for i in listofobjects:
+    for j in connectionlist:
+        if i.value in j:
+            i.netindex.append(connectionlist.index(j))
 # print("LIST OF NODES:")
 # for i in listofobjects:
 #     print(i.prnt())
 
-intial=calcdistance(connectionlist,listofobjects)
+intial=(calcdistance(connectionlist,listofobjects))
+suminitial=sum(intial)
 print("initial wire length is:")
-print(intial)
+print((suminitial))
 
 
 #Annealing
-thermal_an(board,connectionlist,intial,numnets,numcells,listofobjects)
-# plotting(board)
+thermal_an(board,connectionlist,suminitial,numnets,numcells,listofobjects,intial)
+# plotting(board)d
