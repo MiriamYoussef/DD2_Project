@@ -16,6 +16,7 @@ class component_class:
         self.col = col
         self.value = value
         self.netindex= []
+        # self.indexobjinnets=[]
         
     # method to print the object
     def prnt(self):
@@ -23,13 +24,22 @@ class component_class:
         
 
 
+def binaryboard(board, numrows, numcols):
+    for i in range (0, numrows):
+        for j in range (0, numcols):
+            if board[i][j].isnumeric():
+                board[i][j]=1
+            else:
+                board[i][j]=0
+    print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in board]))
+
 
 def initialise_array(numrows,numcols):
     board = [['---']*numcols for i in range(numrows)]
     return board
 
 def checkboardfull(board):
-    if any('---' in nested_list for nested_list in board):
+    if any('---' or '--' or '-' in nested_list for nested_list in board):
         return False
     else:
         return True
@@ -53,10 +63,11 @@ def calcdistance(connectionlist, listofobe):
         lengthlist.append(z)
     # print(lengthlist)
     return (lengthlist)
-def hpwl(lengthlist, listofobe1, listofobe2):
+def hpwl(lengthlist, listofobe1, listofobe2, connectionlist, listofobe):
     #for listofobe1, calulate the hpwl for the indexis in the netindex and substiute them in the index of the lengthlist
     max_row=0
     max_col=0
+    # for all the elements that have the same value as the netindex of listofobe1, calculate the hpwl and substitute it in the lengthlist
     for index, element in enumerate(listofobe1.netindex):
         currentrow=int(listofobe1.row)
         currentcol=int(listofobe1.col)
@@ -69,6 +80,7 @@ def hpwl(lengthlist, listofobe1, listofobe2):
         if(y>max_col):
             max_col=y
         z=max_col+max_row
+        # print(z)
         lengthlist[element]=z
     return (lengthlist)
     
@@ -78,14 +90,14 @@ def hpwl(lengthlist, listofobe1, listofobe2):
      
 
 
-def plotting(board):
-    for i in range (0, numrows):
-        for j in range (0, numcols):
-            if board[i][j]!="---":
-                # print(i,j)
-                plt.scatter(j,i)
-    plt.show()
-def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlist):
+# def plotting(board):
+#     for i in range (0, numrows):
+#         for j in range (0, numcols):
+#             if board[i][j]!="---":
+#                 # print(i,j)
+#                 plt.scatter(j,i)
+    # plt.show()
+def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlist, numrows, numcols):
     inital_temp=intial*500
     final_temp=(5*10**-6)*(intial/int(numnets))
     # print(final_temp)
@@ -112,7 +124,9 @@ def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlis
 
         board[listofobe[randnum1].row][listofobe[randnum1].col], board[listofobe[randnum2].row][listofobe[randnum2].col]= board[listofobe[randnum2].row][listofobe[randnum2].col], board[listofobe[randnum1].row][listofobe[randnum1].col]
         iterations=iterations+1
-        lengthlist=hpwl(lengthlist,listofobe[randnum1],listofobe[randnum2])
+        
+        
+        lengthlist=hpwl(lengthlist,listofobe[randnum1],listofobe[randnum2],connectionlist,listofobe)
         prop=sum(lengthlist)
         # prop=calcdistance(connectionlist,listofobe)
         delta_l=prop-intial
@@ -123,10 +137,13 @@ def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlis
         if (delta_l<0) or random.uniform(0, 1)<prob :
             intial=prop
         if iterations==moves:
-            temper=temper*0.95
+            temper=temper*0.2
             iterations=0
         # print(str(temper) +'/'+str(final_temp))
     end = time.time()
+
+
+
     print("FINAL PLACEMENT")
     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in board]))
     print("FINAL LENGTH")
@@ -134,6 +151,8 @@ def thermal_an(board,connectionlist,intial,numnets,numcells, listofobe,lengthlis
         
     print("Time taken")
     print(end - start)
+    print("Binary Board")
+    binaryboard(board, numrows, numcols)
    
    
 
@@ -171,6 +190,19 @@ for item in list_of_comp:
         clean.append(s)
 #now we need to remove duplicates
 mylist = list(dict.fromkeys(clean))
+#adding empty cells 
+sizeofboard=numrows*numcols
+# print("Size of board")
+# print(sizeofboard)
+numzeros=abs(sizeofboard-len(mylist))
+# print("Number of componenets")
+# print(len(mylist))
+# print("Number of empty cells")
+# print(numzeros)
+for i in range(0,numzeros):
+    mylist.append("---")
+# print("Size of lists after adding zeroes")
+# print(len(mylist))
 #we need to place the components randomly
 for index, element in enumerate(mylist):
     randomrow=random.randint(0, numrows)
@@ -192,6 +224,7 @@ connectionlist=[]
 #we put our connections into a list
 for index, x in enumerate(list_of_comp):
     connectionlist.append(re.findall(r'\d+', list_of_comp[index]))
+
 for i in listofobjects:
     if i.row==-1:
         i.row=numrows-1
@@ -202,6 +235,18 @@ for i in listofobjects:
     for j in connectionlist:
         if i.value in j:
             i.netindex.append(connectionlist.index(j))
+#get the indexs of all the objects in the netlist of the object and put it in indexofobjnet
+# for i in listofobjects:
+#     for j in i.netindex:
+#         for k in connectionlist[j]:
+#             if k!=i.value:
+#                 i.indexobjinnets.append(mylist.index(k)) 
+
+
+
+
+
+
 # print("LIST OF NODES:")
 # for i in listofobjects:
 #     print(i.prnt())
@@ -213,5 +258,5 @@ print((suminitial))
 
 
 #Annealing
-thermal_an(board,connectionlist,suminitial,numnets,numcells,listofobjects,intial)
-# plotting(board)d
+thermal_an(board,connectionlist,suminitial,numnets,numcells,listofobjects,intial, numrows, numcols)
+# # # plotting(board)d
